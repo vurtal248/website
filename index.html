@@ -1,0 +1,678 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Showcase</title>
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
+        rel="stylesheet">
+
+    <!-- Anime.js -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
+
+    <style>
+        :root {
+            --bg-color: #0a0a0a;
+            --text-primary: #fff;
+            --text-secondary: #ccc;
+            --text-tertiary: #888;
+            --border-muted: #222;
+            --border-hover: #fff;
+            --card-bg: #111;
+            --card-bg-hover: #222;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-primary);
+            font-family: 'Inter', sans-serif;
+            min-height: 100vh;
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* SVG Grain Texture */
+        .grain-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.05;
+            mix-blend-mode: exclusion;
+        }
+
+        /* Typography */
+        h1,
+        h2,
+        h3,
+        .title-font {
+            font-family: 'Space Grotesk', sans-serif;
+            margin: 0;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+        }
+
+        /* Layout Container */
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 4rem 2rem;
+            position: relative;
+            z-index: 10;
+        }
+
+        /* Header */
+        header {
+            margin-bottom: 3rem;
+        }
+
+        .header-top {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        h1.page-title {
+            font-size: clamp(2.5rem, 5vw, 4.5rem);
+            line-height: 1.1;
+            /* For text splitting */
+            display: inline-block;
+        }
+
+        .page-title .letter {
+            display: inline-block;
+            transform-origin: 0 100%;
+        }
+
+        .username {
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-secondary);
+            font-size: clamp(1.25rem, 2vw, 1.75rem);
+            margin-bottom: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .badge {
+            background-color: var(--text-primary);
+            color: var(--bg-color);
+            padding: 0.2rem 0.6rem;
+            font-size: 0.875rem;
+            font-weight: 700;
+            border-radius: 9999px;
+            /* Hidden until loaded */
+            opacity: 0;
+        }
+
+        /* Controls / Filter Bar */
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 3rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid var(--border-muted);
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .control-group {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        label {
+            color: var(--text-tertiary);
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        select {
+            background: transparent;
+            color: var(--text-primary);
+            border: 1px solid var(--border-muted);
+            padding: 0.5rem 1rem;
+            font-family: 'Inter', sans-serif;
+            font-size: 0.875rem;
+            border-radius: 0px;
+            /* Brutalist sharp edges */
+            cursor: pointer;
+            appearance: none;
+            border-radius: 4px;
+        }
+
+        select:focus-visible {
+            outline: 2px solid var(--text-primary);
+            outline-offset: 2px;
+        }
+
+        select option {
+            background: var(--card-bg);
+            color: var(--text-primary);
+        }
+
+        /* States */
+        .state-container {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            gap: 1rem;
+        }
+
+        .state-message {
+            color: var(--text-secondary);
+            font-size: 1.25rem;
+            font-family: 'Space Grotesk', sans-serif;
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 2rem;
+            /* Container for staggered animations */
+        }
+
+        @media (max-width: 1024px) {
+            .grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 640px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        /* Repo Card */
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border-muted);
+            padding: 2rem;
+            display: flex;
+            flex-direction: column;
+            cursor: pointer;
+            text-decoration: none;
+            color: inherit;
+            /* Initial state for anime.js */
+            opacity: 0;
+            transform: translateY(40px);
+            will-change: transform, opacity, border-color;
+        }
+
+        .card:focus-visible {
+            outline: 2px solid var(--text-primary);
+            outline-offset: 2px;
+        }
+
+        .card-header {
+            margin-bottom: 1rem;
+        }
+
+        .repo-name {
+            font-size: 1.5rem;
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            word-break: break-word;
+        }
+
+        .repo-desc {
+            color: var(--text-secondary);
+            font-size: 0.9375rem;
+            /* Line clamping */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-height: 2.8125rem;
+            /* ~1.5 line height * 2 */
+        }
+
+        .card-footer {
+            margin-top: auto;
+            padding-top: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: center;
+            font-size: 0.875rem;
+            color: var(--text-tertiary);
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.375rem;
+        }
+
+        .lang-indicator {
+            display: inline-block;
+            width: 0.5rem;
+            height: 0.5rem;
+            border-radius: 50%;
+            background-color: var(--text-secondary);
+        }
+
+        /* Specific SVGs for minimal UI */
+        .icon {
+            width: 16px;
+            height: 16px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- SVG Filter for Grain -->
+    <svg class="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+        <filter id="noise">
+            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+        </filter>
+        <rect width="100%" height="100%" filter="url(#noise)" />
+    </svg>
+
+    <div class="container">
+        <header>
+            <div class="header-top">
+                <h1 class="page-title" id="pageTitle">Open Source</h1>
+            </div>
+            <div class="username">
+                <span id="ghUsername">@username</span>
+                <span class="badge" id="repoCountBadge">0 Repos</span>
+            </div>
+        </header>
+
+        <div class="controls">
+            <div class="control-group">
+                <label for="languageFilter">Language</label>
+                <select id="languageFilter" disabled>
+                    <option value="all">All</option>
+                </select>
+            </div>
+            <div class="control-group">
+                <label for="sortSelect">Sort</label>
+                <select id="sortSelect" disabled>
+                    <option value="updated">Recently Updated</option>
+                    <option value="stars">Most Stars</option>
+                    <option value="name">Name (A-Z)</option>
+                </select>
+            </div>
+        </div>
+
+        <div id="mainContent">
+            <!-- Loading State -->
+            <div class="state-container" id="loadingState">
+                <div class="state-message">Fetching repositories...</div>
+            </div>
+
+            <!-- Error State -->
+            <div class="state-container" id="errorState" style="display: none;">
+                <div class="state-message" style="color: #fff;">Failed to load repositories.</div>
+                <div style="color: var(--text-tertiary);" id="errorDesc"></div>
+            </div>
+
+            <!-- Empty State -->
+            <div class="state-container" id="emptyState" style="display: none;">
+                <div class="state-message">No repositories found.</div>
+            </div>
+
+            <!-- Grid -->
+            <div class="grid" id="repoGrid"></div>
+        </div>
+    </div>
+
+    <script>
+        /**
+         * CONFIGURATION
+         */
+        const GITHUB_USERNAME = 'vurtal248';
+        const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`;
+
+        /**
+         * STATE
+         */
+        let state = {
+            repos: [],
+            languages: new Set(),
+            currentFilter: 'all',
+            currentSort: 'updated',
+            isLoading: true,
+            error: null
+        };
+
+        /**
+         * DOM ELEMENTS
+         */
+        const el = {
+            title: document.getElementById('pageTitle'),
+            username: document.getElementById('ghUsername'),
+            repoCount: document.getElementById('repoCountBadge'),
+            langFilter: document.getElementById('languageFilter'),
+            sortSelect: document.getElementById('sortSelect'),
+            loadingState: document.getElementById('loadingState'),
+            errorState: document.getElementById('errorState'),
+            errorDesc: document.getElementById('errorDesc'),
+            emptyState: document.getElementById('emptyState'),
+            grid: document.getElementById('repoGrid')
+        };
+
+        // Initialize display
+        el.username.textContent = `@${GITHUB_USERNAME}`;
+
+        /**
+         * ANIMATIONS
+         */
+        function animateTitle() {
+            // Text splitting
+            const text = el.title.textContent;
+            el.title.innerHTML = text.replace(/\S/g, "<span class='letter'>$&</span>");
+
+            anime({
+                targets: '.page-title .letter',
+                translateY: [40, 0],
+                opacity: [0, 1],
+                easing: 'easeInOutSine',
+                duration: 800,
+                delay: (el, i) => 50 * i
+            });
+        }
+
+        function animateCardsIn(elements) {
+            anime({
+                targets: elements,
+                translateY: [40, 0],
+                opacity: [0, 1],
+                easing: 'easeOutExpo',
+                duration: 800,
+                delay: (el, i) => i * 80
+            });
+        }
+
+        function animateCardsOut(elements) {
+            return anime({
+                targets: elements,
+                translateY: [0, -20],
+                opacity: [1, 0],
+                easing: 'easeInExpo',
+                duration: 400,
+                delay: (el, i) => i * 40
+            }).finished;
+        }
+
+        function setupCardInteractions() {
+            const cards = document.querySelectorAll('.card');
+
+            cards.forEach(card => {
+                // Hover effect
+                card.addEventListener('mouseenter', () => {
+                    anime({
+                        targets: card,
+                        scale: 1.03,
+                        borderColor: '#ffffff',
+                        duration: 200,
+                        easing: 'easeOutQuad'
+                    });
+                });
+
+                card.addEventListener('mouseleave', () => {
+                    anime({
+                        targets: card,
+                        scale: 1,
+                        borderColor: '#222222', // Reset to var(--border-muted) manually for animejs
+                        duration: 200,
+                        easing: 'easeOutQuad'
+                    });
+                });
+
+                // Click effect - pulse
+                card.addEventListener('mousedown', () => {
+                    anime({
+                        targets: card,
+                        scale: [1, 1.06, 1],
+                        duration: 300,
+                        easing: 'easeOutQuint'
+                    });
+                });
+
+                // Keyboard interaction support
+                card.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter' || e.key === ' ') {
+                        anime({
+                            targets: card,
+                            scale: [1, 1.06, 1],
+                            duration: 300,
+                            easing: 'easeOutQuint'
+                        });
+                        if (e.key === ' ') e.preventDefault();
+                    }
+                });
+            });
+        }
+
+        /**
+         * UTILS
+         */
+        function formatRelativeTime(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffInSeconds = Math.floor((now - date) / 1000);
+
+            const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+
+            if (diffInSeconds < 60) return rtf.format(-diffInSeconds, 'second');
+            const diffInMinutes = Math.floor(diffInSeconds / 60);
+            if (diffInMinutes < 60) return rtf.format(-diffInMinutes, 'minute');
+            const diffInHours = Math.floor(diffInMinutes / 60);
+            if (diffInHours < 24) return rtf.format(-diffInHours, 'hour');
+            const diffInDays = Math.floor(diffInHours / 24);
+            if (diffInDays < 30) return rtf.format(-diffInDays, 'day');
+            const diffInMonths = Math.floor(diffInDays / 30);
+            if (diffInMonths < 12) return rtf.format(-diffInMonths, 'month');
+            const diffInYears = Math.floor(diffInDays / 365);
+            return rtf.format(-diffInYears, 'year');
+        }
+
+        // Star Icon SVG
+        const iconStar = `<svg class="icon" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"></path></svg>`;
+
+        // Fork Icon SVG
+        const iconFork = `<svg class="icon" viewBox="0 0 16 16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z"></path></svg>`;
+
+        /**
+         * RENDER
+         */
+        function renderCards() {
+            let filtered = state.repos;
+
+            // Apply filter
+            if (state.currentFilter !== 'all') {
+                filtered = filtered.filter(repo => repo.language === state.currentFilter);
+            }
+
+            // Apply sort
+            filtered.sort((a, b) => {
+                if (state.currentSort === 'updated') {
+                    return new Date(b.updated_at) - new Date(a.updated_at);
+                }
+                if (state.currentSort === 'stars') {
+                    return b.stargazers_count - a.stargazers_count;
+                }
+                if (state.currentSort === 'name') {
+                    return a.name.localeCompare(b.name);
+                }
+                return 0;
+            });
+
+            // Limit to 12 max as requested by spec if filtering/sorting keeps more?
+            // "per_page=12" in spec fetch url request, but since we want dynamic filtering,
+            // we fetched up to 100, but let's render max 12 at a time as per spec.
+            const displayRepos = filtered.slice(0, 12);
+
+            el.grid.innerHTML = '';
+
+            if (displayRepos.length === 0) {
+                el.emptyState.style.display = 'flex';
+                return;
+            } else {
+                el.emptyState.style.display = 'none';
+            }
+
+            displayRepos.forEach(repo => {
+                const card = document.createElement('a');
+                card.className = 'card';
+                card.href = repo.html_url;
+                card.target = '_blank';
+                card.rel = 'noopener noreferrer';
+
+                const lang = repo.language || 'Unknown';
+                const desc = repo.description || 'No description available.';
+
+                card.innerHTML = \`
+                    <div class="card-header">
+                        <h3 class="repo-name title-font">\${repo.name}</h3>
+                        <p class="repo-desc">\${desc}</p>
+                    </div>
+                    <div class="card-footer">
+                        <div class="stat">
+                            <span class="lang-indicator"></span>
+                            <span>\${lang}</span>
+                        </div>
+                        <div class="stat">
+                            \${iconStar}
+                            <span>\${repo.stargazers_count}</span>
+                        </div>
+                        <div class="stat">
+                            \${iconFork}
+                            <span>\${repo.forks_count}</span>
+                        </div>
+                        <div class="stat" style="margin-left: auto;">
+                            <span>\${formatRelativeTime(repo.updated_at)}</span>
+                        </div>
+                    </div>
+                \`;
+
+                el.grid.appendChild(card);
+            });
+
+            // Re-setup interactions & animate in
+            setupCardInteractions();
+            const cards = el.grid.querySelectorAll('.card');
+            animateCardsIn(cards);
+        }
+
+        async function updateDisplay() {
+            const currentCards = el.grid.querySelectorAll('.card');
+            if (currentCards.length > 0) {
+                await animateCardsOut(currentCards);
+            }
+            renderCards();
+        }
+
+        function populateFilters() {
+            state.languages.forEach(lang => {
+                if (!lang) return;
+                const option = document.createElement('option');
+                option.value = lang;
+                option.textContent = lang;
+                el.langFilter.appendChild(option);
+            });
+
+            el.langFilter.disabled = false;
+            el.sortSelect.disabled = false;
+
+            // Events
+            el.langFilter.addEventListener('change', (e) => {
+                state.currentFilter = e.target.value;
+                updateDisplay();
+            });
+
+            el.sortSelect.addEventListener('change', (e) => {
+                state.currentSort = e.target.value;
+                updateDisplay();
+            });
+        }
+
+        /**
+         * DATA FETCH
+         */
+        async function fetchRepos() {
+            try {
+                // Fetching 100 so client-side filter/sort actually works well,
+                // but limiting display to 12 dynamically. 
+                // Alternatively, could fetch exactly 12 as per spec:
+                // https://api.github.com/users/vurtal248/repos?sort=updated&per_page=12
+                // We'll use the prompt's exact URL fetch string but handle it nicely.
+                const apiUrl = \`https://api.github.com/users/\${GITHUB_USERNAME}/repos?sort=updated&per_page=100\`;
+                const response = await fetch(apiUrl);
+                
+                if (!response.ok) {
+                    throw new Error(\`HTTP \${response.status}\`);
+                }
+
+                const data = await response.json();
+                state.repos = data;
+
+                // Extract languages
+                data.forEach(repo => {
+                    if (repo.language) state.languages.add(repo.language);
+                });
+
+                // Update UI badges
+                el.repoCount.textContent = \`\${data.length} Repos\`;
+                anime({
+                    targets: el.repoCount,
+                    opacity: 1,
+                    duration: 500,
+                    easing: 'easeOutSine'
+                });
+
+                el.loadingState.style.display = 'none';
+                populateFilters();
+                renderCards();
+
+            } catch (err) {
+                el.loadingState.style.display = 'none';
+                el.errorState.style.display = 'flex';
+                el.errorDesc.textContent = err.message;
+            }
+        }
+
+        /**
+         * INITIALIZE
+         */
+        window.addEventListener('DOMContentLoaded', () => {
+            animateTitle();
+            fetchRepos();
+        });
+
+    </script>
+</body>
+
+</html>
