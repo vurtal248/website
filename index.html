@@ -554,29 +554,29 @@
                 const lang = repo.language || 'Unknown';
                 const desc = repo.description || 'No description available.';
 
-                card.innerHTML = \`
+                card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="repo-name title-font">\${repo.name}</h3>
-                        <p class="repo-desc">\${desc}</p>
+                        <h3 class="repo-name title-font">${repo.name}</h3>
+                        <p class="repo-desc">${desc}</p>
                     </div>
                     <div class="card-footer">
                         <div class="stat">
                             <span class="lang-indicator"></span>
-                            <span>\${lang}</span>
+                            <span>${lang}</span>
                         </div>
                         <div class="stat">
-                            \${iconStar}
-                            <span>\${repo.stargazers_count}</span>
+                            ${iconStar}
+                            <span>${repo.stargazers_count}</span>
                         </div>
                         <div class="stat">
-                            \${iconFork}
-                            <span>\${repo.forks_count}</span>
+                            ${iconFork}
+                            <span>${repo.forks_count}</span>
                         </div>
                         <div class="stat" style="margin-left: auto;">
-                            <span>\${formatRelativeTime(repo.updated_at)}</span>
+                            <span>${formatRelativeTime(repo.updated_at)}</span>
                         </div>
                     </div>
-                \`;
+                `;
 
                 el.grid.appendChild(card);
             });
@@ -629,11 +629,11 @@
                 // Alternatively, could fetch exactly 12 as per spec:
                 // https://api.github.com/users/vurtal248/repos?sort=updated&per_page=12
                 // We'll use the prompt's exact URL fetch string but handle it nicely.
-                const apiUrl = \`https://api.github.com/users/\${GITHUB_USERNAME}/repos?sort=updated&per_page=100\`;
+                const apiUrl = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`;
                 const response = await fetch(apiUrl);
-                
+
                 if (!response.ok) {
-                    throw new Error(\`HTTP \${response.status}\`);
+                    throw new Error(`HTTP ${response.status}`);
                 }
 
                 const data = await response.json();
@@ -645,7 +645,7 @@
                 });
 
                 // Update UI badges
-                el.repoCount.textContent = \`\${data.length} Repos\`;
+                el.repoCount.textContent = `${data.length} Repos`;
                 anime({
                     targets: el.repoCount,
                     opacity: 1,
