@@ -247,11 +247,38 @@
             /* Line clamping */
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
             min-height: 2.8125rem;
             /* ~1.5 line height * 2 */
+        }
+
+        .repo-topics {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .topic-tag {
+            font-size: 0.75rem;
+            font-family: 'Space Grotesk', sans-serif;
+            color: var(--text-secondary);
+            border: 1px solid var(--border-muted);
+            padding: 0.25rem 0.5rem;
+            background: rgba(255, 255, 255, 0.02);
+            text-transform: lowercase;
+            letter-spacing: 0.02em;
+            transition: all 0.3s ease;
+            white-space: nowrap;
+        }
+
+        .card:hover .topic-tag {
+            border-color: var(--text-primary);
+            color: var(--bg-color);
+            background: var(--text-primary);
         }
 
         .card-footer {
@@ -554,10 +581,17 @@
                 const lang = repo.language || 'Unknown';
                 const desc = repo.description || 'No description available.';
 
+                let topicsHtml = '';
+                if (repo.topics && repo.topics.length > 0) {
+                    const topicsList = repo.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('');
+                    topicsHtml = `<div class="repo-topics">${topicsList}</div>`;
+                }
+
                 card.innerHTML = `
                     <div class="card-header">
                         <h3 class="repo-name title-font">${repo.name}</h3>
                         <p class="repo-desc">${desc}</p>
+                        ${topicsHtml}
                     </div>
                     <div class="card-footer">
                         <div class="stat">
