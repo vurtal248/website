@@ -4,609 +4,779 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>GitHub Showcase</title>
+    <title>vurtal248 — Public Repositories</title>
+    <meta name="description" content="GitHub public repositories showcase for vurtal248 — browse, filter, and sort open-source projects.">
 
-    <!-- Google Fonts -->
+    <!-- Fonts: DM Serif Display (editorial) + DM Mono (technical) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap"
-        rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 
     <!-- Anime.js -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/animejs/3.2.2/anime.min.js"></script>
 
     <style>
+        /* ─── Design Tokens ────────────────────────────────────────────── */
         :root {
-            --bg-color: #0a0a0a;
-            --text-primary: #fff;
-            --text-secondary: #ccc;
-            --text-tertiary: #888;
-            --border-muted: #222;
-            --border-hover: #fff;
-            --card-bg: #111;
-            --card-bg-hover: #222;
+            --bg:            #0c0c0b;
+            --surface:       #141412;
+            --surface-hover: #1c1c19;
+            --border:        #242420;
+            --border-hover:  #3a3a34;
+            --accent:        #c8a96e;      /* warm amber — single non-monochrome colour */
+            --accent-dim:    rgba(200,169,110,0.12);
+            --text-1:        #f0ede6;      /* near-white, warm tint */
+            --text-2:        #a09a8c;
+            --text-3:        #5c5850;
+
+            /* Custom easing curves — never use CSS defaults */
+            --ease-out:      cubic-bezier(0.23, 1, 0.32, 1);
+            --ease-in-out:   cubic-bezier(0.77, 0, 0.175, 1);
+            --ease-spring:   cubic-bezier(0.34, 1.56, 0.64, 1);  /* slight spring for cards */
         }
 
-        * {
-            box-sizing: border-box;
-            margin: 0;
-            padding: 0;
-        }
+        /* ─── Reset ─────────────────────────────────────────────────────── */
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        /* ─── Base ──────────────────────────────────────────────────────── */
+        html { scroll-behavior: smooth; }
 
         body {
-            background-color: var(--bg-color);
-            color: var(--text-primary);
-            font-family: 'Inter', sans-serif;
+            background-color: var(--bg);
+            color: var(--text-1);
+            font-family: 'DM Mono', monospace;
+            font-size: 0.9375rem;
+            line-height: 1.6;
             min-height: 100vh;
-            line-height: 1.5;
             -webkit-font-smoothing: antialiased;
-            position: relative;
+            -moz-osx-font-smoothing: grayscale;
             overflow-x: hidden;
+            position: relative;
         }
 
-        /* SVG Grain Texture */
-        .grain-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
+        /* ─── Grain Overlay ─────────────────────────────────────────────── */
+        /* SVG feTurbulence grain — subtle film texture */
+        .grain {
+            position: fixed; inset: 0;
             pointer-events: none;
             z-index: 9999;
-            opacity: 0.05;
-            mix-blend-mode: exclusion;
+            opacity: 0.035;
+            mix-blend-mode: overlay;
         }
 
-        /* Typography */
-        h1,
-        h2,
-        h3,
-        .title-font {
-            font-family: 'Space Grotesk', sans-serif;
-            margin: 0;
-            font-weight: 700;
-            letter-spacing: -0.02em;
+        /* ─── Background mesh ───────────────────────────────────────────── */
+        /* Radial amber glow anchored top-left — atmosphere, not distraction */
+        body::before {
+            content: '';
+            position: fixed;
+            top: -20vh; left: -15vw;
+            width: 60vw; height: 60vh;
+            background: radial-gradient(ellipse at center, rgba(200,169,110,0.06) 0%, transparent 70%);
+            pointer-events: none;
+            z-index: 0;
         }
 
-        /* Layout Container */
+        /* ─── Layout ────────────────────────────────────────────────────── */
         .container {
-            max-width: 1280px;
+            max-width: 1320px;
             margin: 0 auto;
-            padding: 4rem 2rem;
+            padding: clamp(3rem, 6vw, 5rem) clamp(1.5rem, 4vw, 3rem);
             position: relative;
-            z-index: 10;
+            z-index: 1;
         }
 
-        /* Header */
-        header {
-            margin-bottom: 3rem;
+        /* ─── Header ────────────────────────────────────────────────────── */
+        header { margin-bottom: clamp(2.5rem, 4vw, 4rem); }
+
+        /* Eyebrow line — monospaced label above big title */
+        .eyebrow {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 400;
+            letter-spacing: 0.18em;
+            text-transform: uppercase;
+            color: var(--accent);
+            margin-bottom: 0.75rem;
+            opacity: 0; /* animated in */
         }
 
-        .header-top {
+        /* Page title — editorial serif */
+        h1.page-title {
+            font-family: 'DM Serif Display', serif;
+            font-weight: 400;  /* DM Serif Display is naturally light at 400 */
+            font-size: clamp(3rem, 7vw, 6rem);
+            line-height: 1.0;
+            letter-spacing: -0.02em;
+            color: var(--text-1);
+            margin-bottom: 1.25rem;
+        }
+
+        /* Each letter wrapped for stagger */
+        .page-title .letter {
+            display: inline-block;
+            will-change: transform, opacity;
+        }
+
+        /* Space gets squished on split — preserve it */
+        .page-title .letter-space { display: inline; }
+
+        /* Username / badge row */
+        .meta-row {
             display: flex;
             align-items: center;
             gap: 1rem;
-            margin-bottom: 0.5rem;
-        }
-
-        h1.page-title {
-            font-size: clamp(2.5rem, 5vw, 4.5rem);
-            line-height: 1.1;
-            /* For text splitting */
-            display: inline-block;
-        }
-
-        .page-title .letter {
-            display: inline-block;
-            transform-origin: 0 100%;
+            flex-wrap: wrap;
         }
 
         .username {
-            font-family: 'Space Grotesk', sans-serif;
-            color: var(--text-secondary);
-            font-size: clamp(1.25rem, 2vw, 1.75rem);
-            margin-bottom: 2rem;
-            display: flex;
-            align-items: center;
-            gap: 1rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.875rem;
+            color: var(--text-2);
+            letter-spacing: 0.02em;
         }
 
         .badge {
-            background-color: var(--text-primary);
-            color: var(--bg-color);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.375rem;
+            background: var(--accent-dim);
+            color: var(--accent);
+            border: 1px solid rgba(200,169,110,0.25);
             padding: 0.2rem 0.6rem;
-            font-size: 0.875rem;
-            font-weight: 700;
-            border-radius: 9999px;
-            /* Hidden until loaded */
-            opacity: 0;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            letter-spacing: 0.06em;
+            border-radius: 3px;
+            opacity: 0; /* animated in */
         }
 
-        /* Controls / Filter Bar */
+        /* ─── Controls ──────────────────────────────────────────────────── */
         .controls {
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 1rem 2rem;
             margin-bottom: 3rem;
             padding-bottom: 1.5rem;
-            border-bottom: 1px solid var(--border-muted);
-            justify-content: space-between;
+            border-bottom: 1px solid var(--border);
             align-items: center;
+            justify-content: space-between;
         }
 
         .control-group {
             display: flex;
-            gap: 1rem;
             align-items: center;
+            gap: 0.75rem;
         }
 
-        label {
-            color: var(--text-tertiary);
-            font-size: 0.875rem;
+        .control-label {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.6875rem;
+            font-weight: 500;
+            letter-spacing: 0.14em;
             text-transform: uppercase;
-            letter-spacing: 0.05em;
+            color: var(--text-3);
         }
 
         select {
             background: transparent;
-            color: var(--text-primary);
-            border: 1px solid var(--border-muted);
-            padding: 0.5rem 1rem;
-            font-family: 'Inter', sans-serif;
-            font-size: 0.875rem;
-            border-radius: 0px;
-            /* Brutalist sharp edges */
+            color: var(--text-1);
+            border: 1px solid var(--border);
+            padding: 0.4rem 0.75rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8125rem;
             cursor: pointer;
             appearance: none;
-            border-radius: 4px;
+            border-radius: 3px;
+            transition:
+                border-color 180ms var(--ease-out),
+                background   180ms var(--ease-out);
+            /* Custom arrow — inline SVG via background-image */
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%235c5850' stroke-width='1.5' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right 0.6rem center;
+            padding-right: 2rem;
+        }
+
+        select:hover {
+            border-color: var(--border-hover);
+            background-color: var(--surface);
         }
 
         select:focus-visible {
-            outline: 2px solid var(--text-primary);
+            outline: 2px solid var(--accent);
             outline-offset: 2px;
         }
 
-        select option {
-            background: var(--card-bg);
-            color: var(--text-primary);
-        }
+        select option { background: var(--surface); color: var(--text-1); }
 
-        /* States */
+        /* ─── States ────────────────────────────────────────────────────── */
         .state-container {
             min-height: 300px;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            text-align: center;
-            gap: 1rem;
+            gap: 0.75rem;
         }
 
         .state-message {
-            color: var(--text-secondary);
-            font-size: 1.25rem;
-            font-family: 'Space Grotesk', sans-serif;
+            font-family: 'DM Serif Display', serif;
+            font-size: 1.5rem;
+            color: var(--text-2);
         }
 
-        /* Grid */
+        .state-sub {
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8125rem;
+            color: var(--text-3);
+        }
+
+        /* ─── Skeleton Loader ───────────────────────────────────────────── */
+        /* Three shimmer placeholders instead of a text spinner */
+        .skeleton-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1.5rem;
+        }
+
+        @media (max-width: 1024px) { .skeleton-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .skeleton-grid { grid-template-columns: 1fr; } }
+
+        .skeleton-card {
+            background: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 2px;
+            padding: 2rem;
+            height: 220px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .skeleton-card::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(
+                90deg,
+                transparent 0%,
+                rgba(240,237,230,0.04) 50%,
+                transparent 100%
+            );
+            animation: shimmer 1.6s ease-in-out infinite;
+            transform: translateX(-100%);
+        }
+
+        @keyframes shimmer {
+            to { transform: translateX(100%); }
+        }
+
+        .sk-line {
+            border-radius: 2px;
+            background: rgba(240,237,230,0.06);
+            margin-bottom: 0.75rem;
+        }
+
+        /* ─── Grid ──────────────────────────────────────────────────────── */
         .grid {
             display: grid;
             grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            /* Container for staggered animations */
+            gap: 1.5rem;
         }
 
-        @media (max-width: 1024px) {
-            .grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-        }
+        @media (max-width: 1024px) { .grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 640px)  { .grid { grid-template-columns: 1fr; } }
 
-        @media (max-width: 640px) {
-            .grid {
-                grid-template-columns: 1fr;
-            }
-        }
-
-        /* Repo Card */
+        /* ─── Repo Card ─────────────────────────────────────────────────── */
         .card {
-            background: var(--card-bg);
-            border: 1px solid var(--border-muted);
-            padding: 2rem;
+            background: var(--surface);
+            border: 1px solid var(--border);
+            padding: 1.75rem 2rem;
             display: flex;
             flex-direction: column;
             cursor: pointer;
             text-decoration: none;
             color: inherit;
-            /* Initial state for anime.js */
+            border-radius: 2px;
+            position: relative;
+            overflow: hidden;
+            /* Start hidden for entrance animation */
             opacity: 0;
-            transform: translateY(40px);
-            will-change: transform, opacity, border-color;
+            transform: translateY(32px);
+            will-change: transform, opacity;
+
+            /* CSS-native border + background transitions for hover */
+            transition:
+                border-color 220ms var(--ease-out),
+                background   220ms var(--ease-out),
+                transform    220ms var(--ease-out),
+                box-shadow   220ms var(--ease-out);
+        }
+
+        /* Accent-glow clip reveal — slides up on hover */
+        /* The bottom-edge amber stripe is a pseudo-element clipped away by default */
+        .card::before {
+            content: '';
+            position: absolute;
+            bottom: 0; left: 0; right: 0;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            /* Clipped fully out, reveals on hover */
+            clip-path: inset(0 100% 0 0);
+            transition: clip-path 360ms var(--ease-out);
+        }
+
+        /* Hover: lift + border brightens + accent stripe reveals */
+        @media (hover: hover) and (pointer: fine) {
+            .card:hover {
+                border-color: var(--border-hover);
+                background: var(--surface-hover);
+                transform: translateY(-4px);
+                box-shadow:
+                    0 12px 40px rgba(0,0,0,0.35),
+                    0 4px 12px rgba(0,0,0,0.2);
+            }
+
+            .card:hover::before {
+                clip-path: inset(0 0% 0 0);
+            }
+        }
+
+        /* Press: scale *in* (0.97) — gives tactile feel */
+        .card:active {
+            transform: scale(0.97) translateY(0);
+            transition-duration: 100ms;
         }
 
         .card:focus-visible {
-            outline: 2px solid var(--text-primary);
-            outline-offset: 2px;
+            outline: 2px solid var(--accent);
+            outline-offset: 3px;
         }
 
-        .card-header {
-            margin-bottom: 1rem;
-        }
+        /* ─── Card internals ─────────────────────────────────────────────── */
+        .card-header { margin-bottom: auto; }
 
         .repo-name {
-            font-size: 1.5rem;
-            color: var(--text-primary);
+            font-family: 'DM Serif Display', serif;
+            font-weight: 400;
+            font-size: clamp(1.25rem, 2vw, 1.5rem);
+            color: var(--text-1);
             margin-bottom: 0.5rem;
             word-break: break-word;
+            line-height: 1.2;
         }
 
         .repo-desc {
-            color: var(--text-secondary);
-            font-size: 0.9375rem;
-            /* Line clamping */
+            font-family: 'DM Mono', monospace;
+            font-size: 0.8125rem;
+            font-weight: 300;
+            color: var(--text-2);
+            line-height: 1.7;
             display: -webkit-box;
             -webkit-line-clamp: 2;
             line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
             text-overflow: ellipsis;
-            min-height: 2.8125rem;
-            /* ~1.5 line height * 2 */
+            min-height: 2.8em;
         }
 
+        /* ─── Topic Tags ─────────────────────────────────────────────────── */
         .repo-topics {
             display: flex;
             flex-wrap: wrap;
-            gap: 0.5rem;
+            gap: 0.375rem;
             margin-top: 1rem;
         }
 
         .topic-tag {
-            font-size: 0.75rem;
-            font-family: 'Space Grotesk', sans-serif;
-            color: var(--text-secondary);
-            border: 1px solid var(--border-muted);
-            padding: 0.25rem 0.5rem;
-            background: rgba(255, 255, 255, 0.02);
+            font-size: 0.6875rem;
+            font-family: 'DM Mono', monospace;
+            font-weight: 500;
+            color: var(--text-3);
+            border: 1px solid var(--border);
+            padding: 0.2rem 0.5rem;
+            background: transparent;
             text-transform: lowercase;
-            letter-spacing: 0.02em;
-            transition: all 0.3s ease;
+            letter-spacing: 0.06em;
+            border-radius: 2px;
+            /* Staggered via --i custom property set in JS */
+            transition:
+                color        200ms var(--ease-out),
+                border-color 200ms var(--ease-out),
+                background   200ms var(--ease-out);
+            transition-delay: calc(var(--i, 0) * 30ms);
             white-space: nowrap;
         }
 
-        .card:hover .topic-tag {
-            border-color: var(--text-primary);
-            color: var(--bg-color);
-            background: var(--text-primary);
+        /* On card hover, cascade topics to amber — staggered by --i */
+        @media (hover: hover) and (pointer: fine) {
+            .card:hover .topic-tag {
+                color: var(--accent);
+                border-color: rgba(200,169,110,0.4);
+                background: var(--accent-dim);
+            }
         }
 
+        /* ─── Card Footer ────────────────────────────────────────────────── */
         .card-footer {
-            margin-top: auto;
-            padding-top: 1.5rem;
+            margin-top: 1.5rem;
+            padding-top: 1.25rem;
+            border-top: 1px solid var(--border);
             display: flex;
             flex-wrap: wrap;
-            gap: 1rem;
+            gap: 0.875rem 1.25rem;
             align-items: center;
-            font-size: 0.875rem;
-            color: var(--text-tertiary);
         }
 
         .stat {
             display: flex;
             align-items: center;
-            gap: 0.375rem;
+            gap: 0.3rem;
+            font-family: 'DM Mono', monospace;
+            font-size: 0.75rem;
+            font-weight: 400;
+            color: var(--text-3);
         }
 
-        .lang-indicator {
+        .stat .icon { width: 13px; height: 13px; fill: currentColor; flex-shrink: 0; }
+
+        .lang-dot {
             display: inline-block;
-            width: 0.5rem;
-            height: 0.5rem;
+            width: 7px; height: 7px;
             border-radius: 50%;
-            background-color: var(--text-secondary);
+            background: var(--accent);
+            flex-shrink: 0;
         }
 
-        /* Specific SVGs for minimal UI */
-        .icon {
-            width: 16px;
-            height: 16px;
-            fill: currentColor;
+        .stat-updated { margin-left: auto; }
+
+        /* ─── Prefers-Reduced-Motion ─────────────────────────────────────── */
+        /* Honour the user's OS-level motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            .card {
+                transition: border-color 120ms ease, background 120ms ease;
+            }
+            .card::before { transition: none; }
+            .topic-tag    { transition: none; }
+            .skeleton-card::after { animation: none; opacity: 0.5; }
+            .grain { display: none; }
         }
     </style>
 </head>
 
 <body>
 
-    <!-- SVG Filter for Grain -->
-    <svg class="grain-overlay" xmlns="http://www.w3.org/2000/svg">
+    <!-- SVG Grain overlay -->
+    <svg class="grain" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
         <filter id="noise">
-            <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" />
+            <feTurbulence type="fractalNoise" baseFrequency="0.68" numOctaves="4" stitchTiles="stitch"/>
         </filter>
-        <rect width="100%" height="100%" filter="url(#noise)" />
+        <rect width="100%" height="100%" filter="url(#noise)"/>
     </svg>
 
     <div class="container">
-        <header>
-            <div class="header-top">
-                <h1 class="page-title" id="pageTitle">Public Repos</h1>
-            </div>
-            <div class="username">
-                <span id="ghUsername">@username</span>
-                <span class="badge" id="repoCountBadge">0 Repos</span>
+        <header id="siteHeader">
+            <p class="eyebrow" id="eyebrow" aria-label="Section label">Github / Public Repos</p>
+            <h1 class="page-title" id="pageTitle">Public Repos</h1>
+            <div class="meta-row">
+                <span class="username" id="ghUsername">@username</span>
+                <span class="badge" id="repoCountBadge" aria-live="polite">— Repos</span>
             </div>
         </header>
 
-        <div class="controls">
+        <div class="controls" id="controlsBar">
             <div class="control-group">
-                <label for="languageFilter">Language</label>
-                <select id="languageFilter" disabled>
+                <label class="control-label" for="languageFilter">Language</label>
+                <select id="languageFilter" disabled aria-label="Filter by language">
                     <option value="all">All</option>
                 </select>
             </div>
             <div class="control-group">
-                <label for="sortSelect">Sort</label>
-                <select id="sortSelect" disabled>
+                <label class="control-label" for="sortSelect">Sort by</label>
+                <select id="sortSelect" disabled aria-label="Sort repositories">
                     <option value="updated">Recently Updated</option>
                     <option value="stars">Most Stars</option>
-                    <option value="name">Name (A-Z)</option>
+                    <option value="name">Name (A–Z)</option>
                 </select>
             </div>
         </div>
 
-        <div id="mainContent">
-            <!-- Loading State -->
-            <div class="state-container" id="loadingState">
-                <div class="state-message">Fetching repositories...</div>
+        <div id="mainContent" aria-live="polite" aria-atomic="false">
+
+            <!-- Skeleton loading state -->
+            <div id="loadingState" class="skeleton-grid" aria-label="Loading repositories">
+                <!-- 6 skeleton cards — same as grid, avoids layout shift -->
+                <div class="skeleton-card">
+                    <div class="sk-line" style="width:55%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:90%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:75%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:40%;height:0.8rem;margin-top:1.5rem;"></div>
+                </div>
+                <div class="skeleton-card" style="animation-delay:0.12s">
+                    <div class="sk-line" style="width:65%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:85%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:70%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:45%;height:0.8rem;margin-top:1.5rem;"></div>
+                </div>
+                <div class="skeleton-card" style="animation-delay:0.24s">
+                    <div class="sk-line" style="width:50%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:95%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:80%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:35%;height:0.8rem;margin-top:1.5rem;"></div>
+                </div>
+                <div class="skeleton-card" style="animation-delay:0.08s">
+                    <div class="sk-line" style="width:60%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:88%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:72%;height:0.8rem;"></div>
+                </div>
+                <div class="skeleton-card" style="animation-delay:0.2s">
+                    <div class="sk-line" style="width:45%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:92%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:78%;height:0.8rem;"></div>
+                </div>
+                <div class="skeleton-card" style="animation-delay:0.32s">
+                    <div class="sk-line" style="width:70%;height:1.4rem;margin-bottom:1rem;"></div>
+                    <div class="sk-line" style="width:82%;height:0.8rem;"></div>
+                    <div class="sk-line" style="width:65%;height:0.8rem;"></div>
+                </div>
             </div>
 
-            <!-- Error State -->
-            <div class="state-container" id="errorState" style="display: none;">
-                <div class="state-message" style="color: #fff;">Failed to load repositories.</div>
-                <div style="color: var(--text-tertiary);" id="errorDesc"></div>
+            <!-- Error state -->
+            <div class="state-container" id="errorState" style="display:none;" role="alert">
+                <p class="state-message">Failed to load repositories.</p>
+                <p class="state-sub" id="errorDesc"></p>
             </div>
 
-            <!-- Empty State -->
-            <div class="state-container" id="emptyState" style="display: none;">
-                <div class="state-message">No repositories found.</div>
+            <!-- Empty state -->
+            <div class="state-container" id="emptyState" style="display:none;">
+                <p class="state-message">No repositories found.</p>
+                <p class="state-sub">Try a different filter.</p>
             </div>
 
-            <!-- Grid -->
-            <div class="grid" id="repoGrid"></div>
+            <!-- Repo grid -->
+            <div class="grid" id="repoGrid" role="list" aria-label="Repository list"></div>
         </div>
     </div>
 
     <script>
-        /**
-         * CONFIGURATION
-         */
+        /* ─── Configuration ──────────────────────────────────────────────── */
         const GITHUB_USERNAME = 'vurtal248';
-        const GITHUB_API_URL = `https://api.github.com/users/${GITHUB_USERNAME}/repos?per_page=100`;
 
-        /**
-         * STATE
-         */
-        let state = {
-            repos: [],
-            languages: new Set(),
+        /* ─── State ──────────────────────────────────────────────────────── */
+        const state = {
+            repos:         [],
+            languages:     new Set(),
             currentFilter: 'all',
-            currentSort: 'updated',
-            isLoading: true,
-            error: null
+            currentSort:   'updated',
         };
 
-        /**
-         * DOM ELEMENTS
-         */
+        /* ─── DOM refs ───────────────────────────────────────────────────── */
         const el = {
-            title: document.getElementById('pageTitle'),
-            username: document.getElementById('ghUsername'),
-            repoCount: document.getElementById('repoCountBadge'),
-            langFilter: document.getElementById('languageFilter'),
-            sortSelect: document.getElementById('sortSelect'),
+            eyebrow:      document.getElementById('eyebrow'),
+            title:        document.getElementById('pageTitle'),
+            username:     document.getElementById('ghUsername'),
+            repoCount:    document.getElementById('repoCountBadge'),
+            langFilter:   document.getElementById('languageFilter'),
+            sortSelect:   document.getElementById('sortSelect'),
             loadingState: document.getElementById('loadingState'),
-            errorState: document.getElementById('errorState'),
-            errorDesc: document.getElementById('errorDesc'),
-            emptyState: document.getElementById('emptyState'),
-            grid: document.getElementById('repoGrid')
+            errorState:   document.getElementById('errorState'),
+            errorDesc:    document.getElementById('errorDesc'),
+            emptyState:   document.getElementById('emptyState'),
+            grid:         document.getElementById('repoGrid'),
+            controls:     document.getElementById('controlsBar'),
         };
 
-        // Initialize display
         el.username.textContent = `@${GITHUB_USERNAME}`;
 
-        /**
-         * ANIMATIONS
-         */
-        function animateTitle() {
-            // Text splitting
-            const text = el.title.textContent;
-            el.title.innerHTML = text.replace(/\S/g, "<span class='letter'>$&</span>");
+        /* ─── Check motion preference (Emil: never animate if user opts out) */
+        const prefersReduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+        /* ─── Easing strings for anime.js matching CSS custom curves ────── */
+        const EASE_OUT    = [0.23, 1, 0.32, 1];
+        const EASE_IN_OUT = [0.77, 0, 0.175, 1];
+
+        /* ─── Animations ─────────────────────────────────────────────────── */
+        function animatePageIn() {
+            if (prefersReduced) {
+                // Still fade eyebrow + badge, just no movement
+                el.eyebrow.style.opacity = '1';
+                return;
+            }
+
+            // 1. Eyebrow slides down + fades in
+            anime({
+                targets: el.eyebrow,
+                opacity: [0, 1],
+                translateY: [-10, 0],
+                easing: `cubicBezier(${EASE_OUT})`,
+                duration: 600,
+                delay: 80,
+            });
+
+            // 2. Title: letter-by-letter stagger from below (clip via translateY)
+            const raw = el.title.textContent;
+            el.title.innerHTML = raw
+                .split('')
+                .map(ch => ch === ' '
+                    ? `<span class="letter-space">&nbsp;</span>`
+                    : `<span class="letter" aria-hidden="true">${ch}</span>`)
+                .join('');
+            el.title.setAttribute('aria-label', raw);
 
             anime({
                 targets: '.page-title .letter',
-                translateY: [40, 0],
-                opacity: [0, 1],
-                easing: 'easeInOutSine',
-                duration: 800,
-                delay: (el, i) => 50 * i
+                translateY: [48, 0],
+                opacity:    [0, 1],
+                easing:     `cubicBezier(${EASE_OUT})`,
+                duration:   700,
+                delay:      (el, i) => 30 + i * 38,
             });
-        }
 
-        function animateCardsIn(elements) {
+            // 3. Controls bar fades in after title finishes
             anime({
-                targets: elements,
-                translateY: [40, 0],
-                opacity: [0, 1],
-                easing: 'easeOutExpo',
-                duration: 800,
-                delay: (el, i) => i * 80
+                targets: el.controls,
+                opacity:    [0, 1],
+                translateY: [12, 0],
+                easing:     `cubicBezier(${EASE_OUT})`,
+                duration:   500,
+                delay:      400,
             });
         }
 
+        /* Cards enter: stagger translateY + opacity + scale from just-below */
+        function animateCardsIn(elements) {
+            if (prefersReduced) {
+                Array.from(elements).forEach(c => {
+                    c.style.opacity = '1';
+                    c.style.transform = 'none';
+                });
+                return;
+            }
+
+            anime({
+                targets:    Array.from(elements),
+                translateY: [28, 0],
+                opacity:    [0, 1],
+                /* Slight spring — scale(0.96→1) gives cards a "settle" feel */
+                scale:      [0.97, 1],
+                easing:     `cubicBezier(${EASE_OUT})`,
+                duration:   600,
+                delay:      (el, i) => i * 65,
+                complete: (anim) => {
+                    // Remove will-change after animation to free GPU memory
+                    anim.animatables.forEach(a => {
+                        a.target.style.willChange = 'auto';
+                    });
+                }
+            });
+        }
+
+        /* Cards exit: blur + translateY up + fade — masks the crossfade seam */
         function animateCardsOut(elements) {
+            if (prefersReduced) {
+                Array.from(elements).forEach(c => { c.style.opacity = '0'; });
+                return Promise.resolve();
+            }
+
             return anime({
-                targets: elements,
-                translateY: [0, -20],
-                opacity: [1, 0],
-                easing: 'easeInExpo',
-                duration: 400,
-                delay: (el, i) => i * 40
+                targets:    Array.from(elements),
+                translateY: [0, -14],
+                opacity:    [1, 0],
+                // filter: blur is not directly animatable in anime.js —
+                // apply via CSS class toggle instead
+                easing:     `cubicBezier(${EASE_IN_OUT})`,
+                duration:   280,
+                delay:      (el, i) => i * 30,
             }).finished;
         }
 
-        function setupCardInteractions() {
-            const cards = document.querySelectorAll('.card');
+        /* ─── SVG Icons ──────────────────────────────────────────────────── */
+        const iconStar = `<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"/></svg>`;
+        const iconFork = `<svg class="icon" viewBox="0 0 16 16" aria-hidden="true"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z"/></svg>`;
 
-            cards.forEach(card => {
-                // Hover effect
-                card.addEventListener('mouseenter', () => {
-                    anime({
-                        targets: card,
-                        scale: 1.03,
-                        borderColor: '#ffffff',
-                        duration: 200,
-                        easing: 'easeOutQuad'
-                    });
-                });
-
-                card.addEventListener('mouseleave', () => {
-                    anime({
-                        targets: card,
-                        scale: 1,
-                        borderColor: '#222222', // Reset to var(--border-muted) manually for animejs
-                        duration: 200,
-                        easing: 'easeOutQuad'
-                    });
-                });
-
-                // Click effect - pulse
-                card.addEventListener('mousedown', () => {
-                    anime({
-                        targets: card,
-                        scale: [1, 1.06, 1],
-                        duration: 300,
-                        easing: 'easeOutQuint'
-                    });
-                });
-
-                // Keyboard interaction support
-                card.addEventListener('keydown', (e) => {
-                    if (e.key === 'Enter' || e.key === ' ') {
-                        anime({
-                            targets: card,
-                            scale: [1, 1.06, 1],
-                            duration: 300,
-                            easing: 'easeOutQuint'
-                        });
-                        if (e.key === ' ') e.preventDefault();
-                    }
-                });
-            });
-        }
-
-        /**
-         * UTILS
-         */
+        /* ─── Utils ──────────────────────────────────────────────────────── */
         function formatRelativeTime(dateString) {
             const date = new Date(dateString);
-            const now = new Date();
-            const diffInSeconds = Math.floor((now - date) / 1000);
-
-            const rtf = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
-
-            if (diffInSeconds < 60) return rtf.format(-diffInSeconds, 'second');
-            const diffInMinutes = Math.floor(diffInSeconds / 60);
-            if (diffInMinutes < 60) return rtf.format(-diffInMinutes, 'minute');
-            const diffInHours = Math.floor(diffInMinutes / 60);
-            if (diffInHours < 24) return rtf.format(-diffInHours, 'hour');
-            const diffInDays = Math.floor(diffInHours / 24);
-            if (diffInDays < 30) return rtf.format(-diffInDays, 'day');
-            const diffInMonths = Math.floor(diffInDays / 30);
-            if (diffInMonths < 12) return rtf.format(-diffInMonths, 'month');
-            const diffInYears = Math.floor(diffInDays / 365);
-            return rtf.format(-diffInYears, 'year');
+            const now  = new Date();
+            const secs = Math.floor((now - date) / 1000);
+            const rtf  = new Intl.RelativeTimeFormat('en', { numeric: 'auto' });
+            if (secs < 60)                          return rtf.format(-secs, 'second');
+            const mins = Math.floor(secs / 60);
+            if (mins < 60)                          return rtf.format(-mins, 'minute');
+            const hrs  = Math.floor(mins / 60);
+            if (hrs  < 24)                          return rtf.format(-hrs,  'hour');
+            const days = Math.floor(hrs  / 24);
+            if (days < 30)                          return rtf.format(-days, 'day');
+            const mos  = Math.floor(days / 30);
+            if (mos  < 12)                          return rtf.format(-mos,  'month');
+            return rtf.format(-Math.floor(days / 365), 'year');
         }
 
-        // Star Icon SVG
-        const iconStar = `<svg class="icon" viewBox="0 0 16 16"><path d="M8 .25a.75.75 0 0 1 .673.418l1.882 3.815 4.21.612a.75.75 0 0 1 .416 1.279l-3.046 2.97.719 4.192a.751.751 0 0 1-1.088.791L8 12.347l-3.766 1.98a.75.75 0 0 1-1.088-.79l.72-4.194L.818 6.374a.75.75 0 0 1 .416-1.28l4.21-.611L7.327.668A.75.75 0 0 1 8 .25Z"></path></svg>`;
-
-        // Fork Icon SVG
-        const iconFork = `<svg class="icon" viewBox="0 0 16 16"><path d="M5 5.372v.878c0 .414.336.75.75.75h4.5a.75.75 0 0 0 .75-.75v-.878a2.25 2.25 0 1 1 1.5 0v.878a2.25 2.25 0 0 1-2.25 2.25h-1.5v2.128a2.251 2.251 0 1 1-1.5 0V8.5h-1.5A2.25 2.25 0 0 1 3.5 6.25v-.878a2.25 2.25 0 1 1 1.5 0ZM5 3.25a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Zm6.75.75a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Zm-3 8.75a.75.75 0 1 0-1.5 0 .75.75 0 0 0 1.5 0Z"></path></svg>`;
-
-        /**
-         * RENDER
-         */
+        /* ─── Render ─────────────────────────────────────────────────────── */
         function renderCards() {
             let filtered = state.repos;
 
-            // Apply filter
             if (state.currentFilter !== 'all') {
-                filtered = filtered.filter(repo => repo.language === state.currentFilter);
+                filtered = filtered.filter(r => r.language === state.currentFilter);
             }
 
-            // Apply sort
             filtered.sort((a, b) => {
-                if (state.currentSort === 'updated') {
-                    return new Date(b.updated_at) - new Date(a.updated_at);
-                }
-                if (state.currentSort === 'stars') {
-                    return b.stargazers_count - a.stargazers_count;
-                }
-                if (state.currentSort === 'name') {
-                    return a.name.localeCompare(b.name);
-                }
+                if (state.currentSort === 'updated') return new Date(b.updated_at) - new Date(a.updated_at);
+                if (state.currentSort === 'stars')   return b.stargazers_count - a.stargazers_count;
+                if (state.currentSort === 'name')    return a.name.localeCompare(b.name);
                 return 0;
             });
 
-            // Limit to 12 max as requested by spec if filtering/sorting keeps more?
-            // "per_page=12" in spec fetch url request, but since we want dynamic filtering,
-            // we fetched up to 100, but let's render max 12 at a time as per spec.
-            const displayRepos = filtered.slice(0, 12);
-
+            const display = filtered.slice(0, 12);
             el.grid.innerHTML = '';
 
-            if (displayRepos.length === 0) {
+            if (display.length === 0) {
                 el.emptyState.style.display = 'flex';
                 return;
-            } else {
-                el.emptyState.style.display = 'none';
             }
+            el.emptyState.style.display = 'none';
 
-            displayRepos.forEach(repo => {
+            display.forEach(repo => {
                 const card = document.createElement('a');
-                card.className = 'card';
-                card.href = repo.html_url;
-                card.target = '_blank';
-                card.rel = 'noopener noreferrer';
+                card.className  = 'card';
+                card.href       = repo.html_url;
+                card.target     = '_blank';
+                card.rel        = 'noopener noreferrer';
+                card.setAttribute('role', 'listitem');
+                card.setAttribute('aria-label', `${repo.name} repository`);
 
                 const lang = repo.language || 'Unknown';
                 const desc = repo.description || 'No description available.';
 
+                // Stagger topic tags with --i CSS custom property
                 let topicsHtml = '';
                 if (repo.topics && repo.topics.length > 0) {
-                    const topicsList = repo.topics.map(topic => `<span class="topic-tag">${topic}</span>`).join('');
-                    topicsHtml = `<div class="repo-topics">${topicsList}</div>`;
+                    const tags = repo.topics
+                        .map((t, i) => `<span class="topic-tag" style="--i:${i}">${t}</span>`)
+                        .join('');
+                    topicsHtml = `<div class="repo-topics">${tags}</div>`;
                 }
 
                 card.innerHTML = `
                     <div class="card-header">
-                        <h3 class="repo-name title-font">${repo.name}</h3>
+                        <h3 class="repo-name">${repo.name}</h3>
                         <p class="repo-desc">${desc}</p>
                         ${topicsHtml}
                     </div>
                     <div class="card-footer">
                         <div class="stat">
-                            <span class="lang-indicator"></span>
+                            <span class="lang-dot" title="${lang}"></span>
                             <span>${lang}</span>
                         </div>
-                        <div class="stat">
+                        <div class="stat" aria-label="${repo.stargazers_count} stars">
                             ${iconStar}
                             <span>${repo.stargazers_count}</span>
                         </div>
-                        <div class="stat">
+                        <div class="stat" aria-label="${repo.forks_count} forks">
                             ${iconFork}
                             <span>${repo.forks_count}</span>
                         </div>
-                        <div class="stat" style="margin-left: auto;">
+                        <div class="stat stat-updated">
                             <span>${formatRelativeTime(repo.updated_at)}</span>
                         </div>
                     </div>
@@ -615,76 +785,52 @@
                 el.grid.appendChild(card);
             });
 
-            // Re-setup interactions & animate in
-            setupCardInteractions();
-            const cards = el.grid.querySelectorAll('.card');
-            animateCardsIn(cards);
+            animateCardsIn(el.grid.querySelectorAll('.card'));
         }
 
         async function updateDisplay() {
-            const currentCards = el.grid.querySelectorAll('.card');
-            if (currentCards.length > 0) {
-                await animateCardsOut(currentCards);
-            }
+            const current = el.grid.querySelectorAll('.card');
+            if (current.length > 0) await animateCardsOut(current);
             renderCards();
         }
 
         function populateFilters() {
-            state.languages.forEach(lang => {
-                if (!lang) return;
-                const option = document.createElement('option');
-                option.value = lang;
-                option.textContent = lang;
-                el.langFilter.appendChild(option);
+            // Sort languages alphabetically
+            [...state.languages].sort().forEach(lang => {
+                const opt = document.createElement('option');
+                opt.value = lang;
+                opt.textContent = lang;
+                el.langFilter.appendChild(opt);
             });
 
             el.langFilter.disabled = false;
             el.sortSelect.disabled = false;
 
-            // Events
-            el.langFilter.addEventListener('change', (e) => {
-                state.currentFilter = e.target.value;
-                updateDisplay();
-            });
-
-            el.sortSelect.addEventListener('change', (e) => {
-                state.currentSort = e.target.value;
-                updateDisplay();
-            });
+            el.langFilter.addEventListener('change', e => { state.currentFilter = e.target.value; updateDisplay(); });
+            el.sortSelect.addEventListener('change', e => { state.currentSort   = e.target.value; updateDisplay(); });
         }
 
-        /**
-         * DATA FETCH
-         */
+        /* ─── Data Fetch ─────────────────────────────────────────────────── */
         async function fetchRepos() {
             try {
-                // Fetching 100 so client-side filter/sort actually works well,
-                // but limiting display to 12 dynamically. 
-                // Alternatively, could fetch exactly 12 as per spec:
-                // https://api.github.com/users/vurtal248/repos?sort=updated&per_page=12
-                // We'll use the prompt's exact URL fetch string but handle it nicely.
-                const apiUrl = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`;
-                const response = await fetch(apiUrl);
+                const url = `https://api.github.com/users/${GITHUB_USERNAME}/repos?sort=updated&per_page=100`;
+                const res = await fetch(url, { headers: { Accept: 'application/vnd.github+json' } });
 
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}`);
-                }
+                if (!res.ok) throw new Error(`GitHub API ${res.status}`);
 
-                const data = await response.json();
+                const data = await res.json();
                 state.repos = data;
+                data.forEach(r => { if (r.language) state.languages.add(r.language); });
 
-                // Extract languages
-                data.forEach(repo => {
-                    if (repo.language) state.languages.add(repo.language);
-                });
-
-                // Update UI badges
+                // Badge: swap in count
                 el.repoCount.textContent = `${data.length} Repos`;
                 anime({
-                    targets: el.repoCount,
-                    opacity: 1,
-                    duration: 500,
-                    easing: 'easeOutSine'
+                    targets:  el.repoCount,
+                    opacity:  [0, 1],
+                    translateY: [-6, 0],
+                    easing:   `cubicBezier(${EASE_OUT})`,
+                    duration: 400,
+                    delay:    200,
                 });
 
                 el.loadingState.style.display = 'none';
@@ -693,19 +839,16 @@
 
             } catch (err) {
                 el.loadingState.style.display = 'none';
-                el.errorState.style.display = 'flex';
-                el.errorDesc.textContent = err.message;
+                el.errorState.style.display   = 'flex';
+                el.errorDesc.textContent      = err.message;
             }
         }
 
-        /**
-         * INITIALIZE
-         */
-        window.addEventListener('DOMContentLoaded', () => {
-            animateTitle();
+        /* ─── Init ───────────────────────────────────────────────────────── */
+        document.addEventListener('DOMContentLoaded', () => {
+            animatePageIn();
             fetchRepos();
         });
-
     </script>
 </body>
 
